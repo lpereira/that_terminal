@@ -154,22 +154,24 @@ int main()
             {
                 quit = true;
             }
+            if(p.revents & POLLOUT)
+            {
+                if(!term.OutBuffer.empty())
+                {
+                    std::u32string str(term.OutBuffer.begin(), term.OutBuffer.end());
+                    outbuffer += ToUTF8(str);
+                    term.OutBuffer.clear();
+                }
+                if(!outbuffer.empty())
+                {
+                    if (int r = tty.Send(outbuffer); r > 0)
+                        outbuffer.erase(0, r);
+                }
+            }
             break;
         case 0:
             timedout = true;
             break;
-        }
-        if(!term.OutBuffer.empty())
-        {
-            std::u32string str(term.OutBuffer.begin(), term.OutBuffer.end());
-            outbuffer += ToUTF8(str);
-            term.OutBuffer.clear();
-        }
-        if(!outbuffer.empty())
-        {
-            int r = tty.Send(outbuffer);
-            if(r > 0)
-                outbuffer.erase(0, r);
         }
 
         std::string pending_input;
