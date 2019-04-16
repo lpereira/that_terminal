@@ -134,6 +134,7 @@ int main()
     while(!quit)
     {
         struct pollfd p = { tty.getfd(), POLLIN, 0 };
+        bool timedout = false;
         if(!term.OutBuffer.empty() || !outbuffer.empty())
         {
             p.events |= POLLOUT;
@@ -154,6 +155,9 @@ int main()
                 quit = true;
             }
             break;
+        case 0:
+            timedout = true;
+            break;
         }
         if(!term.OutBuffer.empty())
         {
@@ -169,7 +173,7 @@ int main()
         }
 
         std::string pending_input;
-        for(SDL_Event ev; SDL_PollEvent(&ev); )
+        for(SDL_Event ev; timedout && SDL_PollEvent(&ev); )
             switch(ev.type)
             {
                 case SDL_WINDOWEVENT:
