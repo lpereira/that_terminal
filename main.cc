@@ -138,17 +138,22 @@ int main()
         {
             p.events |= POLLOUT;
         }
-        int pollres = poll(&p, 1, 30);
-        if(pollres < 0) break;
-        if(p.revents & POLLIN)
-        {
-            auto input = tty.Recv();
-            auto& str = input.first;
-            term.Write(FromUTF8(str));
-        }
-        if(p.revents & (POLLERR | POLLHUP))
-        {
+        switch(poll(&p, 1, 30)) {
+        case -1:
             quit = true;
+            continue;
+        case 1:
+            if(p.revents & POLLIN)
+            {
+                auto input = tty.Recv();
+                auto& str = input.first;
+                term.Write(FromUTF8(str));
+            }
+            if(p.revents & (POLLERR | POLLHUP))
+            {
+                quit = true;
+            }
+            break;
         }
         if(!term.OutBuffer.empty())
         {
