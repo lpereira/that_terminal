@@ -133,20 +133,20 @@ int main()
     unsigned timer = 0;
     while(!quit)
     {
-        struct pollfd p[2] = { { tty.getfd(), POLLIN, 0 } };
+        struct pollfd p = { tty.getfd(), POLLIN, 0 };
         if(!term.OutBuffer.empty() || !outbuffer.empty())
         {
-            p[0].events |= POLLOUT;
+            p.events |= POLLOUT;
         }
-        int pollres = poll(p, 1, 30);
+        int pollres = poll(&p, 1, 30);
         if(pollres < 0) break;
-        if(p[0].revents & POLLIN)
+        if(p.revents & POLLIN)
         {
             auto input = tty.Recv();
             auto& str = input.first;
             term.Write(FromUTF8(str));
         }
-        if(p[0].revents & (POLLERR | POLLHUP))
+        if(p.revents & (POLLERR | POLLHUP))
         {
             quit = true;
         }
